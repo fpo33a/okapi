@@ -17,17 +17,19 @@ public class OkapiSrv extends AbstractVerticle {
                     String consumerGroup = req.request().getParam("consumergroup");
                     String readPolicy = req.request().getParam("readpolicy");
                     String kafkaBroker = req.request().getParam("broker");
+                    String metaData = req.request().getParam("metadata");
                     System.out.println("subscribe");
                     System.out.println("topic "+topic );
                     System.out.println("consumerGroup "+consumerGroup );
                     System.out.println("readPolicy "+readPolicy );
                     System.out.println("kafkaBroker "+kafkaBroker );
+                    System.out.println("metaData "+metaData );
                     OkapiKafkaConsumer consumer = consumerMap.get(topic+"_"+consumerGroup);
                     if (consumer == null) {
                         System.out.println ("Create kafka consumer");
                         consumer = new OkapiKafkaConsumer();
                         consumerMap.put(topic+"_"+consumerGroup, consumer);
-                        consumer.init(kafkaBroker,consumerGroup,topic,readPolicy);
+                        consumer.init(kafkaBroker,consumerGroup,topic,readPolicy,metaData);
                         req.response()
                                 .putHeader("content-type", "text/html")
                                 .end("<html><body>Subscribing for "+topic+", "+consumerGroup+", "+readPolicy+" created</body></html>");

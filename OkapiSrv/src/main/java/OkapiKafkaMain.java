@@ -2,7 +2,7 @@ import java.util.HashMap;
 
 
 
-// http://localhost:9123/subscribe?topic=test&consumergroup=fp100&readpolicy=earliest&broker=130.61.83.201:9092
+// http://localhost:9123/subscribe?topic=test&consumergroup=fp100&readpolicy=earliest&broker=130.61.83.201:9092&metadata=true
 // http://localhost:9123/unsubscribe?topic=test&consumergroup=fp100
 
 // this class is for development testing purpose only, not used by vertx itself
@@ -30,7 +30,8 @@ public class OkapiKafkaMain {
         test.init ("130.61.83.201:9092",
                           consumerGroup,
                           KAFKA_TOPIC_NAME,
-                "earliest");
+                "earliest",
+                "true");
 
         test.start();
         try {

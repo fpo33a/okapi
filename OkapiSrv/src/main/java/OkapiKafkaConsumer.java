@@ -16,18 +16,20 @@ import java.util.Properties;
 public class OkapiKafkaConsumer extends Thread {
 
     private boolean bStopReading = false;
-    private String kafkaServer = null;
+    private String kafkaServer = "localhost:9092";
     private String consumerGroup = null;
     private String topicName = null;
     private String readPolicy= null;
+    private String metaData = "false";
 
-    public void init (String kafkaServer, String consumerGroup, String topicName, String readPolicy)
+    public void init (String kafkaServer, String consumerGroup, String topicName, String readPolicy, String metadata)
     {
         this.bStopReading = false;
         this.kafkaServer = kafkaServer;
         this.consumerGroup = consumerGroup;
         this.topicName = topicName;
         this.readPolicy = readPolicy;
+        this.metaData = metadata;
     }
 
     public void stopReading ()
@@ -38,6 +40,9 @@ public class OkapiKafkaConsumer extends Thread {
     public void run ()
     {
         String filename = this.topicName + "_" + this.consumerGroup + ".topic";
+        String metafile = this.topicName + "_" + this.consumerGroup + ".meta";
+        FileOutputStream outputStream = null;
+        FileOutputStream metaStream = null;
 
         System.out.println ("subscribing to "+this.topicName + " with consumer group " + this.consumerGroup);
         // Set consumer configuration properties
@@ -53,19 +58,26 @@ public class OkapiKafkaConsumer extends Thread {
             // Subscribe to the topic
             consumer.subscribe(Collections.singleton(this.topicName));
 
-            FileOutputStream outputStream = new FileOutputStream(filename);
+            outputStream = new FileOutputStream(filename);
+            if (this.metaData.compareToIgnoreCase("true") == 0) metaStream = new FileOutputStream(metafile);
 
             // Continuously read records from the topic
             while (this.bStopReading == false) {
                 final ConsumerRecords<String, String> records = consumer.poll(1000);
                 for (ConsumerRecord<String, String> record : records) {
                     System.out.println("Received: " + record.value());
-                    outputStream.write(record.value().getBytes());
+                    outputStream.write((record.value()+"\n").getBytes());
                     outputStream.flush();
+                    if (metaStream != null)
+                    {
+                        metaStream.write((record.timestamp()+","+record.topic()+","+record.partition()+","+record.offset()+"\n").getBytes());
+                        metaStream.flush();
+                    }
                 }
             }
             System.out.println ("Ending subscribion to "+this.topicName + " with consumer group " + this.consumerGroup);
             outputStream.close();
+            if (metaStream != null) metaStream.close();
         }
         catch (Exception e)
         {
