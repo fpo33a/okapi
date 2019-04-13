@@ -33,13 +33,14 @@ public class OkapiSrv extends AbstractVerticle {
                         req.response()
                                 .putHeader("content-type", "text/html")
                                 .end("<html><body>Subscribing for "+topic+", "+consumerGroup+", "+readPolicy+" created</body></html>");
+                        consumer.start();
                     }
                     else {
                         req.response()
                                 .putHeader("content-type", "text/html")
                                 .end("<html><body>Subscribing for "+topic+", "+consumerGroup+" already exists</body></html>");
                     }
-                    consumer.start();
+
                 });
 
         router.get("/unsubscribe/")
