@@ -4,7 +4,7 @@ OKAPI stands for Oracle Kafka Application Programming Interface
 
 The purpose of this project is to read kafka topic data from oracle sql queries
 
-The application is compose of two components:
+The application is composed of two components:
 
 - Okapi Server 
 - Oracle PLSQL package
@@ -45,6 +45,8 @@ The following actions are done when subscribing to a topic:
 - Create a new file called *topic-name_consumer-group.topic*. This file contains the kafka record value ( one record per line )
 
 - If the metadata flag is set to true create a new file called *topic-name_consumer-group.meta* to store kafka record metadata (timestamp,topic,partition,offset). This file contains one line per kafka record.
+
+The subscription remains up and running until the unsubscribe method is explicitly called or the Okapi Server module is stopped. It is so not related to any sql select statement.
 
 ### *unsubscribe* method ###
 
@@ -217,7 +219,7 @@ In case you unsubscribed and want to read all data from the beginning of the top
 
     exec kafka_test.Okapi.unsubscribe ('localhost:9123','test','fpcgNEW');
 
-Example with csv, json & fixed format can be found in test.sql file
+More examples with csv, json & fixed format can be found in sql\test.sql file
 
 ## To do ##
 
@@ -225,4 +227,5 @@ Example with csv, json & fixed format can be found in test.sql file
 - Improve exception handling ( both sql & java )
 - update vertx version
 - use java package 
+- external table files cleanup ( on unsubscribe ? )
 - ...
