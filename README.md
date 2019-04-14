@@ -86,9 +86,9 @@ This package can be deployed on premise on a standard oracle database ( version 
 In order to communicate with Okapi Server you need to set oracle ACLs. (see kafka_test_create.sql)
 In order to read data from kafka you need to map oracle external table(s) on top or result file(s).
 
-### *subscribe* method ###
+### *subscribe* procedure ###
 
-The subcribe method has 6 parameters:
+The subcribe procedure has 6 parameters:
 
 - The Okapi server ip address
 - The kafka broker list
@@ -110,9 +110,9 @@ Basically you can, using oracle standard features, read data in the following fo
 - fixed position format
 - json format 
 
-### *unsubscribe* method ###
+### *unsubscribe* procedure ###
 
-The unsubcribe method has 3 parameters:
+The unsubcribe procedure has 3 parameters:
 
 - The Okapi server ip address
 - The topic name
