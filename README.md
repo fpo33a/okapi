@@ -221,9 +221,5 @@ In case you unsubscribed and want to read all data from the beginning of the top
 ## To do ##
 
 - Add kafka authentication ( any method can be used, standard java code )
-
-
 - Improve exception handling ( both sql & java )
-
-
 - ...
