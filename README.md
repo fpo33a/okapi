@@ -125,6 +125,16 @@ Example of call:
 
 This procedure does an REST API call to the *unsubsribe* method of Okapi server module.
 
+## Others ##
+
+Once subscribed to a topic/consumer group, the Okapi server thread just runs and continously dump kafka entering data into output file.
+Consecutive sql select on the external table will return more and more rows as data enters kafka topic.
+
+If you unsubscribe file is closed but data is still available from sql query.
+If you "re"subscribe file is recreated, so will you receive any new received kafka data ( based on kafka read policy 'earliest' or 'latest' ) 
+
+In case you unsubscribed and want to read all data from the beginning of the topic you need to subscribe again with a new consumer group. In this case do not forget to adapt the external table location with the new file name.
+
 ## Example of use ##
 
     -- create dummy test table
@@ -143,13 +153,16 @@ This procedure does an REST API call to the *unsubsribe* method of Okapi server 
     )
     reject limit unlimited; 
 
+	set serveroutput on
+    exec kafka_test.Okapi.subscribe ('localhost:9123','123.45.67.089:9092','test','fpcg','earliest','true');
+
     SQL> select * from kafka_test.ext_test;
     
     no rows selected
     
     SQL> 
     
-    kafka-console-producer --broker-list localhost:19092 --topic test
+    kafka-console-producer --broker-list localhost:9092 --topic test
     >this is a first test
     >this is a second test
     >
@@ -164,14 +177,46 @@ This procedure does an REST API call to the *unsubsribe* method of Okapi server 
     
     SQL> 
 
+    exec kafka_test.Okapi.unsubscribe ('localhost:9123','test','fpcg');
 
-## Others ##
+	-- subscribe with same consumer group, get data from where we stand
+    exec kafka_test.Okapi.subscribe ('localhost:9123','123.45.67.089:9092','test','fpcg','earliest','true');
 
-Once subscribed to a topic/consumer group, the Okapi server thread just runs and continously dump kafka entering data into output file.
-Consecutive sql select on the external table will return more and more rows as data enters kafka topic.
-If you unsubscribe file is closed but data is still available from sql query.
-If you "re"subscribe file is recreated, so will you receive any new received kafka data ( based on kafka read policy 'earliest' or 'latest' ) 
-In case you unsubscribed and want to read all data from the beginning of the topic you need to subscribe again with a new consumer group. In this case do not forget to adapt the external table location with the new file name.
+    SQL> select * from kafka_test.ext_test;
+    
+    no rows selected
+    
+    SQL> 
+    
+    kafka-console-producer --broker-list localhost:19092 --topic test
+    >this is a third test
+    >
+    
+    SQL> select * from kafka_test.ext_test;
+    
+    DATA
+    ------------------------------------------------------------------
+    this is a third test
+       
+    SQL> 
+
+    exec kafka_test.Okapi.unsubscribe ('localhost:9123','test','fpcg');
+
+	-- subscribe with a new consumer group, get all data from beginning
+    exec kafka_test.Okapi.subscribe ('localhost:9123','123.45.67.089:9092','test','fpcgNEW','earliest','true');
+
+	SQL> ALTER TABLE kafka_test.ext_test LOCATION ('test_fpcgNEW.topic');
+
+    SQL> select * from kafka_test.ext_test;
+    
+    DATA
+    ------------------------------------------------------------------
+    this is a first test
+    this is a second test
+    this is a third test
+
+    exec kafka_test.Okapi.unsubscribe ('localhost:9123','test','fpcgNEW');
+
 
 ## To do ##
 
