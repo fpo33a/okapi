@@ -42,9 +42,9 @@ The following actions are done when subscribing to a topic:
 
 - If no create a new kafka client thread subscribing to this topic & consumer group
 
-- Create a new file called <<topic-name>>_<<consumer-group>>.topic. This file contains the kafka record value ( one record per line )
+- Create a new file called *topic-name_consumer-group.topic*. This file contains the kafka record value ( one record per line )
 
-- If the metadata flag is set to true create a new file called <<topic-name>>_<<consumer-group>>.meta to store kafka record metadata (timestamp,topic,partition,offset). This file contains one line per kafka record.
+- If the metadata flag is set to true create a new file called *topic-name_consumer-group.meta* to store kafka record metadata (timestamp,topic,partition,offset). This file contains one line per kafka record.
 
 ### *unsubscribe* method ###
 
