@@ -4,13 +4,13 @@
 
 -- subscribe
 set serveroutput on
-exec kafka_test.Okapi.subscribe ('localhost:9123','130.61.83.201:9092','test','fp100','earliest','true');
+exec kafka_test.Okapi.subscribe ('localhost:9123','123.456.089:9092','test','fp100','earliest','true');
 
 select * from kafka_test.ext_test;
 
 -- unsubscribe
 set serveroutput on
-exec kafka_test.Okapi.unsubscribe ('localhost:9123','130.61.83.201:9092','test','fp100','earliest','true');
+exec kafka_test.Okapi.unsubscribe ('localhost:9123','123.456.089:9092','test','fp100','earliest','true');
 
 -- query
 SQL> select * from kafka_test.ext_test;
@@ -60,7 +60,7 @@ organization external (
   location ('testcsv_fpcsv.topic')
 )
 reject limit unlimited;
-SQL>   2    3    4    5    6    7    8    9   10   11   12   13   14   15   16  
+SQL>   2    3    4    5    6    7    8    9   10   11   12   13   14   15   16
 Table created.
 
 SQL> select * from  kafka_test.ext_test_csv;
@@ -73,7 +73,7 @@ KUP-04040: file testcsv_fpcsv.topic in KAFKA_LOCATION_DIR not found
 
 
 SQL> set serveroutput on
-exec kafka_test.Okapi.subscribe ('localhost:9123','130.61.83.201:9092','testcsv','fpcsv','earliest','true');
+exec kafka_test.Okapi.subscribe ('localhost:9123','123.456.089:9092','testcsv','fpcsv','earliest','true');
 <html><body>Subscribing for testcsv, fpcsv, earliest created</body></html>
 
 PL/SQL procedure successfully completed.
@@ -149,7 +149,7 @@ as
 View created.
 
 SQL> set serveroutput on
-exec kafka_test.Okapi.subscribe ('localhost:9123','130.61.83.201:9092','testjson','fpjson','earliest','true');
+exec kafka_test.Okapi.subscribe ('localhost:9123','123.456.089:9092','testjson','fpjson','earliest','true');
 
 -- on kafka server
 ------------------
@@ -183,3 +183,60 @@ exec kafka_test.Okapi.unsubscribe ('localhost:9123','testjson','fpjson');
 
 PL/SQL procedure successfully completed.
 
+---------------------------------------------------------------------------------
+-- fixed position test
+---------------------------------------------------------------------------------
+
+-- on oracle DB
+---------------
+
+SQL> -- create dummy test table
+SQL> create table kafka_test.ext_test_fixed (
+  firstname   varchar2(20),
+  lastname    varchar2(20),
+  country     varchar2(20)
+)
+organization external (
+  type              oracle_loader
+  default directory KAFKA_LOCATION_DIR
+  access parameters (
+     records delimited by newline
+     fields (
+       firstname position(1: 10) char(10),
+       lastname  position(11:30)  char(20),
+       country   position(31:50) char(20)
+       )
+  )
+  location ('testfixed_fpfixed.topic')
+)
+reject limit unlimited;  2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19  
+
+Table created.
+
+SQL> 
+
+SQL> set serveroutput on
+exec kafka_test.Okapi.subscribe ('localhost:9123','123.456.089:9092','testfixed','fpfixed','earliest','true');
+SQL> <html><body>Subscribing for testfixed, fpfixed, earliest created</body></html>
+
+
+-- on kafka server
+-------------------
+root@kafka-vm1:/# kafka-topics --zookeeper localhost:32181 --create --replication-factor 1 --partitions 3 --topic testfixed
+Created topic testfixed.
+root@kafka-vm1:/# kafka-console-producer --broker-list localhost:19092 --topic testfixed
+>john      doe                 usa
+>emmanuel  macron              france
+>
+
+-- on oracle DB
+---------------
+
+SQL> select * from   kafka_test.ext_test_fixed;
+
+FIRSTNAME	     LASTNAME		  COUNTRY
+-------------------- -------------------- --------------------
+emmanuel	     macron		  france
+john		     doe		  usa
+
+SQL> 

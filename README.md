@@ -217,9 +217,12 @@ In case you unsubscribed and want to read all data from the beginning of the top
 
     exec kafka_test.Okapi.unsubscribe ('localhost:9123','test','fpcgNEW');
 
+Example with csv, json & fixed format can be found in test.sql file
 
 ## To do ##
 
-- Add kafka authentication ( any method can be used, standard java code )
+- Add kafka authentication ( any method can be used as we use standard java code )
 - Improve exception handling ( both sql & java )
+- update vertx version
+- use java package 
 - ...
