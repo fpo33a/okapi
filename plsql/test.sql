@@ -34,7 +34,7 @@ this is a first test
 this is a second test
 
 
-SQL> 
+SQL>
 
 ---------------------------------------------------------------------------------
 -- csv test
@@ -240,3 +240,105 @@ emmanuel	     macron		  france
 john		     doe		  usa
 
 SQL> 
+
+---------------------------------------------------------------------------------
+-- Getting data AND kafka metadata - this works with any format
+-- In the below example i use rownum to join data. This is normally something to NOT do.
+-- In this case it works because external tables based on file are always sorted
+---------------------------------------------------------------------------------
+
+-- on oracle DB
+---------------
+
+ drop table kafka_test.ext_test_fixed_metadata ;
+ create table kafka_test.ext_test_fixed_metadata (
+  epoch        number,
+  topicname   varchar2(50),
+  partition   number,
+  offset      number
+)
+organization external (
+  type              oracle_loader
+  default directory KAFKA_LOCATION_DIR
+  access parameters (
+    records delimited  by newline
+    fields  terminated by ','
+    missing field values are null
+  )
+  location ('testfixed_fpfixed.meta')
+)
+reject limit unlimited;
+
+
+create table kafka_test.ext_test_fixed_metadata (
+  epoch       number,
+  topicname   varchar2(50),
+  partition   number,
+  offset      number
+)
+organization external (
+  type              oracle_loader
+  default directory KAFKA_LOCATION_DIR
+  access parameters (
+    records delimited  by newline
+    fields  terminated by ','
+    missing field values are null
+  )
+  location ('testfixed_fpfixed.meta')
+)
+reject limit unlimited;
+  2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17  
+Table created.
+
+select * from kafka_test.ext_test_fixed_metadata;
+
+     EPOCH TOPICNAME					       PARTITION     OFFSET
+---------- -------------------------------------------------- ---------- ----------
+1.5553E+12 testfixed						       1	  0
+1.5553E+12 testfixed						       2	  0
+
+SQL> create or replace view kafka_test.vw_test_fixed_metadata as
+  select m.EPOCH,
+         m.TOPICNAME,
+         m.PARTITION,
+         m.OFFSET,
+         ROWNUM as RN
+  from kafka_test.ext_test_fixed_metadata m;  2    3    4    5    6    7  
+
+View created.
+
+SQL> create or replace view kafka_test.vw_test_fixed as
+  select f.FIRSTNAME,
+         f.LASTNAME,
+         f.COUNTRY,
+         ROWNUM as RN
+  from kafka_test.ext_test_fixed f;SQL> SQL>   2    3    4    5    6  
+
+View created.
+
+SQL> create or replace view kafka_test.vw_test_fixed_with_metadata as
+  select m.EPOCH,
+         m.TOPICNAME,
+         m.PARTITION,
+         m.OFFSET,
+         f.FIRSTNAME,
+         f.LASTNAME,
+         f.COUNTRY
+  from kafka_test.vw_test_fixed f inner join kafka_test.vw_test_fixed_metadata m on f.rn = m.rn;
+  2    3    4    5    6    7    8    9
+View created.
+
+SQL>select * from kafka_test.vw_test_fixed_with_metadata;
+
+SQL> select * from kafka_test.vw_test_fixed_with_metadata;
+
+     EPOCH TOPICNAME					       PARTITION     OFFSET FIRSTNAME		 LASTNAME	      COUNTRY
+---------- -------------------------------------------------- ---------- ---------- -------------------- -------------------- --------------------
+1.5553E+12 testfixed						       1	  0 emmanuel		 macron 	      france
+1.5553E+12 testfixed						       2	  0 john		 doe		      usa
+
+SQL> 
+
+
+
+
